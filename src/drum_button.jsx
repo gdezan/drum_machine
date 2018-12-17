@@ -4,13 +4,15 @@ import "./App.css";
 export default class DrumButton extends React.Component {
   state = {
     selected: "",
-    src: "",
   };
 
   componentDidMount() {
     document.addEventListener("keydown", this.handleKeyPress);
     document.addEventListener("keyup", this.handleKeyUp);
-    this.setState({src: this.props.src});
+  }
+
+  componentDidUpdate() {
+    this._audio.volume = (parseFloat(this.props.volume || 0) * 0.01).toFixed(2);
   }
 
   handleKeyPress = event => {
@@ -26,8 +28,11 @@ export default class DrumButton extends React.Component {
   };
 
   select = () => {
-    this.setState({ selected: "selected" });
-    this.playSound();
+    this.setState({ selected: "pressed" });
+    if (this.props.power === 1) {
+      this.setState({ selected: "pressed selected" });
+      this.playSound();
+    }
   };
 
   deselect = () => {
@@ -40,6 +45,9 @@ export default class DrumButton extends React.Component {
   };
 
   render() {
+    if (!this.props.src && !this.props.bank) {
+      return null;
+    }
     return (
       <div
         className={`drum-button noselect ${this.state.selected}`}
@@ -48,8 +56,9 @@ export default class DrumButton extends React.Component {
         tabIndex="-1"
       >
         <audio
-          src={this.state.src}
-          ref={(a) => this._audio = a}
+          src={require(`${this.props.src[this.props.bank]}`)}
+          ref={a => (this._audio = a)}
+          type="audio/wav"
         />
         {this.props.keypad}
       </div>
